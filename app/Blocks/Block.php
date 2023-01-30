@@ -2,11 +2,45 @@
 
 namespace App\Blocks;
 
-abstract class Block
-{
-    public array $state = [];
+use Filament\Forms\Concerns\InteractsWithForms;
+use Filament\Forms\Contracts\HasForms;
+use Livewire\Component;
 
-    abstract public function label(): string;
-    abstract public function description(): string;
-    abstract public function form(): array;
+class Block extends Component implements HasForms
+{
+    use InteractsWithForms;
+
+    // abstract public function label(): string;
+    // abstract public function description(): string;
+    // abstract public function form(): Form;
+
+    public array $state = [];
+    public string $blockId;
+
+    public function mount(array $block)
+    {
+        $this->blockId = $block['id'];
+
+        $this->form->fill($block['data']);
+    }
+
+    public function render()
+    {
+        return view('livewire.block-form', [
+            'form' => $this->form,
+        ]);
+    }
+
+    public function getFormStatePath(): ?string
+    {
+        return "block-{$this->blockId}";
+    }
+
+    public function updateBlockData(): void
+    {
+        $this->emitUp(
+            "architect::update-block-data:{$this->blockId}",
+            $this->form->getState(),
+        );
+    }
 }

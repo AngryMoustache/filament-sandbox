@@ -16,7 +16,7 @@ class ImageBlock extends Block
         return 'A simple image block.';
     }
 
-    public function form(): array
+    public function getFormSchema(): array
     {
         return [
             TextInput::make('image_link')

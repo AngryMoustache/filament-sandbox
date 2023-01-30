@@ -16,7 +16,7 @@ class TextBlock extends Block
         return 'A simple text block.';
     }
 
-    public function form(): array
+    public function getFormSchema(): array
     {
         return [
             TextInput::make('title')
