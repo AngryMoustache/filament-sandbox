@@ -14,6 +14,11 @@
     <div x-data="{
         state: $wire.entangle('{{ $getStatePath() }}').defer,
         modalData: [],
+        init () {
+            window.addEventListener('architect::update-block-data:{{ $getId() }}', (event) => {
+                $wire.dispatchFormEvent('architect::update-block-fields', event.detail)
+            })
+        },
         openModal (modalId, data = {}) {
             this.modalData = data
 
@@ -67,12 +72,14 @@
 
                         {{-- FORM FIELDS --}}
                         <div
-                            x-show="! collapsed"
-                            x-transition
                             style="display: none"
                             class="px-6 py-4 border-t"
+                            wire:key="block-{{ $getStatePath() }}-{{ $index }}-fields"
+                            x-show="! collapsed"
+                            x-transition
                         >
                             {!! Livewire::mount($block['object']->getName(), [
+                                'fieldId' => $getId(),
                                 'block' => $block,
                             ])->html() !!}
                         </div>

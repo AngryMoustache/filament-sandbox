@@ -15,10 +15,13 @@ class Block extends Component implements HasForms
     // abstract public function form(): Form;
 
     public array $state = [];
+
+    public string $fieldId;
     public string $blockId;
 
-    public function mount(array $block)
+    public function mount(string $fieldId, array $block)
     {
+        $this->fieldId = $fieldId;
         $this->blockId = $block['id'];
 
         $this->form->fill($block['data']);
@@ -38,9 +41,9 @@ class Block extends Component implements HasForms
 
     public function updateBlockData(): void
     {
-        $this->emitUp(
-            "architect::update-block-data:{$this->blockId}",
-            $this->form->getState(),
-        );
+        $this->dispatchBrowserEvent("architect::update-block-data:{$this->fieldId}", [
+            'blockId' => $this->blockId,
+            'state' => $this->form->getState(),
+        ]);
     }
 }

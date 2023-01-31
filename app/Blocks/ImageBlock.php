@@ -2,6 +2,7 @@
 
 namespace App\Blocks;
 
+use Filament\Forms\Components\Checkbox;
 use Filament\Forms\Components\TextInput;
 
 class ImageBlock extends Block
@@ -21,6 +22,13 @@ class ImageBlock extends Block
         return [
             TextInput::make('image_link')
                 ->required(),
+        ];
+    }
+
+    public function getSettingsSchema(): array
+    {
+        return [
+            Checkbox::make('show_caption'),
         ];
     }
 }

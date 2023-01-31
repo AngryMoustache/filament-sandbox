@@ -68,11 +68,17 @@ class ArchitectInput extends Field
                     $this->saveState($component, $state);
                 },
             ],
-            'architect::update-block-data' => [
-                function (ArchitectInput $component, string $block, array $data): void {
+            'architect::update-block-fields' => [
+                function (ArchitectInput $component, array $data): void {
                     $state  = $component->getState();
 
-                    dd($block, $data);
+                    $state = collect($state)->map(function ($block) use ($data) {
+                        if ($block['id'] === $data['blockId']) {
+                            $block['data'] = $data['state'];
+                        }
+
+                        return $block;
+                    })->toArray();
 
                     $this->saveState($component, $state);
                 },

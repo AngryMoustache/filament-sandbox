@@ -1,5 +1,5 @@
 @props([
-    'index' => 0,
+    'index' => -1,
 ])
 
 <button
