@@ -12,16 +12,16 @@
         Loading the settings, please wait
     </div>
 
-    <div class="mt-4 mb-6" wire:loading.remove>
+    <div style="margin: 2rem 0" wire:loading.remove>
         {{ $fields }}
     </div>
 
-    <x-filament::modal.actions :full-width="true">
+    <x-filament::modal.actions>
         <x-filament::button color="secondary" x-on:click.prevent="close()">
             Cancel
         </x-filament::button>
 
-        <x-filament::button color="danger" x-on:click.prevent="$wire.dispatchFormEvent(
+        <x-filament::button x-on:click.prevent="$wire.dispatchFormEvent(
             'architect::updateSettings', '{{ $statePath }}', modalData.index
         ) && close()">
             Confirm

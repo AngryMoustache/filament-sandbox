@@ -33,7 +33,8 @@ class ImageBlock extends Block
     public function settings(): array
     {
         return [
-            Checkbox::make('show_caption'),
+            Checkbox::make('show_caption')
+                ->label('Has a caption under the image'),
         ];
     }
 }
