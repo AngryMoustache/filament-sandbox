@@ -2,11 +2,11 @@
 
 namespace App\Forms\Components;
 
-use Filament\Forms\Components\Field;
+use Filament\Forms\Components\Repeater;
 use Illuminate\Support\Collection;
-use Livewire\Livewire;
+use Illuminate\Support\Str;
 
-class ArchitectInput extends Field
+class ArchitectInput extends Repeater
 {
     protected string $view = 'forms.components.architect';
 
@@ -21,69 +21,68 @@ class ArchitectInput extends Field
     {
         parent::setUp();
 
-        // TODO: doesn't work after hydrate - set Livewire aliases for rendering forms
-        // collect($this->blocks)->each(function (string $block) {
-        //     Livewire::component((new $block)->getName(), $block);
-        // });
-
         $this->registerListeners([
-            'architect::add-block' => [
-                function (ArchitectInput $component, int $index, string $block): void {
-                    $state  = $component->getState();
+            'architect::createBlock' => [
+                function (ArchitectInput $component, string $statePath, string $uuid, string $block): void {
+                    if ($statePath !== $component->getStatePath()) {
+                        return;
+                    }
 
-                    $state = array_merge(
-                        array_slice($state, 0, $index),
-                        [[
-                            'id' => uniqid(),
-                            'type' => $block,
-                            'label' => (new $block)->label(),
-                            'data' => [],
-                        ]],
-                        array_slice($state, $index)
-                    );
+                    $state = $component->getState() ?? [];
+
+                    $newUuid = (string) Str::uuid();
+                    $newBlock = [
+                        'type' => $block,
+                        'data' => [],
+                        'settings' => [],
+                    ];
+
+                    // Put the new block after the selected item with $uuid if it's not 0
+                    if ($uuid === '0') {
+                        $state = [$newUuid => $newBlock] + $state;
+                    } else {
+                        $index = array_search($uuid, array_keys($state));
+                        $state = array_merge(
+                            array_slice($state, 0, $index + 1),
+                            [$newUuid => $newBlock],
+                            array_slice($state, $index + 1)
+                        );
+                    }
 
                     $this->saveState($component, $state);
+
+                    $component->getChildComponentContainers()[$newUuid]->fill();
                 },
             ],
-            'architect::delete-block' => [
-                function (ArchitectInput $component, int $index): void {
-                    $state  = $component->getState();
+            'architect::openSettings' => [
+                function (ArchitectInput $component, string $statePath, string $uuid): void {
+                    if ($statePath !== $component->getStatePath()) {
+                        return;
+                    }
 
-                    $state = array_merge(
-                        array_slice($state, 0, $index),
-                        array_slice($state, $index + 1)
-                    );
-
-                    $this->saveState($component, $state);
+                    $livewire = $component->getLivewire();
+                    data_set($livewire, 'settingsUuid', $uuid);
                 },
             ],
-            'architect::sort-blocks' => [
-                function (ArchitectInput $component, array $order): void {
-                    $state  = $component->getState();
+            'architect::updateSettings' => [
+                function (ArchitectInput $component, string $statePath, string $uuid): void {
+                    if ($statePath !== $component->getStatePath()) {
+                        return;
+                    }
 
-                    $state = collect($order)
-                        ->map(fn ($index) => $state[$index])
-                        ->toArray();
-
-                    $this->saveState($component, $state);
-                },
-            ],
-            'architect::update-block-fields' => [
-                function (ArchitectInput $component, array $data): void {
-                    $state  = $component->getState();
-
-                    $state = collect($state)->map(function ($block) use ($data) {
-                        if ($block['id'] === $data['blockId']) {
-                            $block['data'] = $data['state'];
-                        }
-
-                        return $block;
-                    })->toArray();
-
-                    $this->saveState($component, $state);
+                    $this->saveState($component, $component->getState());
                 },
             ],
         ]);
+
+        $this->dehydrateStateUsing(function (array &$state) {
+            // Remove unimportant data
+            foreach (array_keys($state) as $uuid) {
+                unset($state[$uuid]['object']);
+            }
+
+            return $state;
+        });
     }
 
     public function saveState(ArchitectInput $component, array $state)
@@ -100,5 +99,40 @@ class ArchitectInput extends Field
 
             return $block;
         })->toArray();
+    }
+
+    public function getChildComponentContainers(bool $withHidden = false): array
+    {
+        $containers = parent::getChildComponentContainers($withHidden);
+        $state = $this->getState();
+
+        foreach ($state ?? [] as $uuid => $block) {
+            $containers[$uuid]->block = $block;
+            $containers[$uuid]->components((new $block['type'])->getFields(
+                $block['settings'] ?? []
+            ));
+        }
+
+        return $containers;
+    }
+
+    public function getSettingsChildComponentContainer()
+    {
+        $containers = parent::getChildComponentContainers();
+
+        $livewire = $this->getLivewire();
+        $uuid = data_get($livewire, 'settingsUuid');
+
+        if (! $uuid) {
+            return null;
+        }
+
+        $state = $this->getState();
+        $block = $state[$uuid];
+
+        $containers[$uuid]->block = $block;
+        $containers[$uuid]->components((new $block['type'])->getSettingFields());
+
+        return $containers[$uuid];
     }
 }

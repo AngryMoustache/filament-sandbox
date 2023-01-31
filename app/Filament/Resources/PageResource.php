@@ -6,7 +6,6 @@ use App\Filament\Resources\PageResource\Pages;
 use App\Forms\Components\PageArchitectInput;
 use App\Models\Page;
 use Closure;
-use Filament\Forms\Components\Fieldset;
 use Filament\Forms\Components\Section;
 use Filament\Forms\Components\TextInput;
 use Filament\Resources\Form;
@@ -14,6 +13,7 @@ use Filament\Resources\Resource;
 use Filament\Resources\Table;
 use Filament\Tables;
 use Filament\Tables\Columns\TextColumn;
+use Icetalker\FilamentTableRepeater\Forms\Components\TableRepeater;
 use Illuminate\Support\Str;
 
 class PageResource extends Resource
@@ -36,10 +36,17 @@ class PageResource extends Resource
                             $set('slug', Str::slug($state));
                         }),
 
-                    TextInput::make('slug')
-                        ->disabled(),
+                    // Repeater::make('test')
+                    //     ->schema([
+                    //         TextInput::make('title')->required(),
+                    //         TextInput::make('slug')
+                    //     ]),
 
                     PageArchitectInput::make('body'),
+
+                    // TableRepeater::make('test')->schema([
+                    //     TextInput::make('title'),
+                    // ]),
                 ]),
         ]);
     }

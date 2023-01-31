@@ -14,11 +14,6 @@
     <div x-data="{
         state: $wire.entangle('{{ $getStatePath() }}').defer,
         modalData: [],
-        init () {
-            window.addEventListener('architect::update-block-data:{{ $getId() }}', (event) => {
-                $wire.dispatchFormEvent('architect::update-block-fields', event.detail)
-            })
-        },
         openModal (modalId, data = {}) {
             this.modalData = data
 
@@ -31,27 +26,39 @@
         <div
             class="flex flex-col gap-4"
             wire:sortable
-            wire:end.stop="dispatchFormEvent('architect::sort-blocks', $event.target.sortable.toArray())"
+            wire:end.stop="dispatchFormEvent('repeater::moveItems', '{{ $getStatePath() }}', $event.target.sortable.toArray())"
         >
             <x-buttons.plus />
 
-            @foreach ($getState() as $index => $block)
+            @foreach ($getChildComponentContainers() as $uuid => $block)
                 <div
                     x-data="{ collapsed: false }"
-                    wire:key="block-{{ $getStatePath() }}-{{ $index }}"
-                    wire:sortable.item="{{ $index }}"
+                    wire:key="block-{{ $getStatePath() }}-{{ $uuid }}"
+                    wire:sortable.item="{{ $uuid }}"
                 >
-                    <div class="border rounded-lg">
+                    <div class="border rounded-lg overflow-hidden">
                         <div class="flex justify-between items-center px-4 py-2 bg-gray-100">
                             <div
                                 class="flex gap-4 items-center"
                                 wire:sortable.handle
                             >
                                 <x-heroicon-o-menu class="h-4 w-4 cursor-move text-gray-600" />
-                                <span class="font-bold">{{ $block['label'] }}</span>
+                                <span class="font-bold">{{ $block->block['object']->label() }}</span>
                             </div>
 
                             <div class="flex gap-2 items-center">
+                                @if (count($block->block['object']->settings()) > 0)
+                                    <span x-on:click.prevent="$wire.dispatchFormEvent(
+                                        'architect::openSettings',
+                                        '{{ $getStatePath() }}',
+                                        '{{ $uuid }}'
+                                    ) && openModal('block-settings', { index: '{{ $uuid }}' })">
+                                        <x-heroicon-o-cog
+                                            class="p-1 h-8 w-8 cursor-pointer text-gray-400"
+                                        />
+                                    </span>
+                                @endif
+
                                 <span
                                     class="transition duration-200"
                                     x-on:click.prevent="collapsed = ! collapsed"
@@ -62,7 +69,7 @@
                                     />
                                 </span>
 
-                                <span x-on:click.prevent="openModal('delete-block', { index: {{ $index }} })">
+                                <span x-on:click.prevent="openModal('delete-block', { index: '{{ $uuid }}' })">
                                     <x-heroicon-s-trash
                                         class="p-1 h-8 w-8 cursor-pointer text-gray-400"
                                     />
@@ -70,28 +77,28 @@
                             </div>
                         </div>
 
-                        {{-- FORM FIELDS --}}
                         <div
                             style="display: none"
                             class="px-6 py-4 border-t"
-                            wire:key="block-{{ $getStatePath() }}-{{ $index }}-fields"
+                            wire:key="block-{{ $getStatePath() }}-{{ $uuid }}-fields"
                             x-show="! collapsed"
                             x-transition
                         >
-                            {!! Livewire::mount($block['object']->getName(), [
-                                'fieldId' => $getId(),
-                                'block' => $block,
-                            ])->html() !!}
+                            {{ $block }}
                         </div>
                     </div>
 
-                    <x-buttons.plus :$index />
+                    <x-buttons.plus :index="$uuid" />
                 </div>
             @endforeach
         </div>
 
         {{-- Modals --}}
-        <x-modals.add-block :blocks="$getBlocks()" />
-        <x-modals.delete-block />
+        <x-modals.add-block :blocks="$getBlocks()" :state-path="$getStatePath()" />
+        <x-modals.delete-block :state-path="$getStatePath()" />
+        <x-modals.block-settings
+            :state-path="$getStatePath()"
+            :fields="$getSettingsChildComponentContainer()"
+        />
     </div>
 </x-dynamic-component>

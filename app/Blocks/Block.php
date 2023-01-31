@@ -2,48 +2,30 @@
 
 namespace App\Blocks;
 
-use Filament\Forms\Concerns\InteractsWithForms;
-use Filament\Forms\Contracts\HasForms;
-use Livewire\Component;
+use Filament\Forms\Components\Field;
 
-class Block extends Component implements HasForms
+abstract class Block
 {
-    use InteractsWithForms;
+    abstract public function label(): string;
+    abstract public function description(): string;
+    abstract public function fields(array $settings = []): array;
 
-    // abstract public function label(): string;
-    // abstract public function description(): string;
-    // abstract public function form(): Form;
-
-    public array $state = [];
-
-    public string $fieldId;
-    public string $blockId;
-
-    public function mount(string $fieldId, array $block)
+    public function getFields(array $settings = [])
     {
-        $this->fieldId = $fieldId;
-        $this->blockId = $block['id'];
-
-        $this->form->fill($block['data']);
+        return collect($this->fields($settings))->each(function (Field $field) {
+            $field->statePath('data.' . $field->getName());
+        })->toArray();
     }
 
-    public function render()
+    public function getSettingFields()
     {
-        return view('livewire.block-form', [
-            'form' => $this->form,
-        ]);
+        return collect($this->settings())->each(function (Field $field) {
+            $field->statePath('settings.' . $field->getName());
+        })->toArray();
     }
 
-    public function getFormStatePath(): ?string
+    public function settings(): array
     {
-        return "block-{$this->blockId}";
-    }
-
-    public function updateBlockData(): void
-    {
-        $this->dispatchBrowserEvent("architect::update-block-data:{$this->fieldId}", [
-            'blockId' => $this->blockId,
-            'state' => $this->form->getState(),
-        ]);
+        return [];
     }
 }

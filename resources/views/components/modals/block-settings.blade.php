@@ -1,15 +1,20 @@
 @props([
     'statePath',
+    'fields',
 ])
 
-<x-filament::modal id="delete-block">
+<x-filament::modal id="block-settings" width="4xl">
     <x-filament::modal.heading>
-        Are you sure?
+        Block settings
     </x-filament::modal.heading>
 
-    <p class="py-1">
-        You are about to remove this block along with its contents, this action cannot be undone.
-    </p>
+    <div class="mt-4 mb-6" wire:loading>
+        Loading the settings, please wait
+    </div>
+
+    <div class="mt-4 mb-6" wire:loading.remove>
+        {{ $fields }}
+    </div>
 
     <x-filament::modal.actions :full-width="true">
         <x-filament::button color="secondary" x-on:click.prevent="close()">
@@ -17,7 +22,7 @@
         </x-filament::button>
 
         <x-filament::button color="danger" x-on:click.prevent="$wire.dispatchFormEvent(
-            'repeater::deleteItem', '{{ $statePath }}', modalData.index
+            'architect::updateSettings', '{{ $statePath }}', modalData.index
         ) && close()">
             Confirm
         </x-filament::button>

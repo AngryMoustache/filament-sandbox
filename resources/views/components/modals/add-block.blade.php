@@ -1,5 +1,6 @@
 @props([
     'blocks',
+    'statePath',
 ])
 
 <x-filament::modal id="new-block" width="7xl">
@@ -10,7 +11,7 @@
     <ul>
         @foreach ($blocks as $block)
             <li x-on:click.prevent="$wire.dispatchFormEvent(
-                'architect::add-block', modalData.index, @js(get_class($block))
+                'architect::createBlock', @js($statePath), modalData.index, @js(get_class($block))
             ) && close()">
                 {{ $block->label() }} -
                 {{ $block->description() }}
