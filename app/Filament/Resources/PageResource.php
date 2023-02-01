@@ -36,6 +36,8 @@ class PageResource extends Resource
                             $set('slug', Str::slug($state));
                         }),
 
+                    TextInput::make('slug'),
+
                     // Repeater::make('test')
                     //     ->schema([
                     //         TextInput::make('title')->required(),

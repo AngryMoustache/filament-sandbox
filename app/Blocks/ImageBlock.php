@@ -2,7 +2,6 @@
 
 namespace App\Blocks;
 
-use App\Forms\Components\ArchitectInput;
 use Filament\Forms\Components\Checkbox;
 use Filament\Forms\Components\TextInput;
 
@@ -26,7 +25,8 @@ class ImageBlock extends Block
                 ->required(),
 
             TextInput::make('caption')
-                ->hidden(fn () => ! ($settings['show_caption'] ?? false)),
+                ->hidden(fn () => ! ($settings['show_caption'] ?? false))
+                ->required(),
         ];
     }
 

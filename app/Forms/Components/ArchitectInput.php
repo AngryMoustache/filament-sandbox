@@ -2,6 +2,7 @@
 
 namespace App\Forms\Components;
 
+use App\SettingsBag;
 use Filament\Forms\Components\Repeater;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
@@ -50,8 +51,6 @@ class ArchitectInput extends Repeater
                     }
 
                     $this->saveState($component, $state);
-
-                    $component->getChildComponentContainers()[$newUuid]->fill();
                 },
             ],
             'architect::openSettings' => [
@@ -93,12 +92,19 @@ class ArchitectInput extends Repeater
 
     public function getState(): array
     {
-        return collect(parent::getState() ?? [])->map(function ($block) {
-            $block['object'] = new $block['type'];
-            $block['object']->state = $block['data'];
+        return collect(parent::getState() ?? [])
+            ->filter()
+            ->map(function ($block) {
+                $object = new $block['type'];
+                $object->getSettingFields();
 
-            return $block;
-        })->toArray();
+                $block['object'] = $object;
+                $block['object']->state = $block['data'];
+                $block['settings'] += $object->defaultSettings;
+
+                return $block;
+            })
+            ->toArray();
     }
 
     public function getChildComponentContainers(bool $withHidden = false): array
@@ -128,7 +134,10 @@ class ArchitectInput extends Repeater
         }
 
         $state = $this->getState();
-        $block = $state[$uuid];
+        $block = $state[$uuid] ?? null;
+        if (! $block) {
+            return null;
+        }
 
         $containers[$uuid]->block = $block;
         $containers[$uuid]->components((new $block['type'])->getSettingFields());

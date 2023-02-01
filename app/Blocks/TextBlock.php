@@ -2,6 +2,9 @@
 
 namespace App\Blocks;
 
+use Filament\Forms\Components\Checkbox;
+use Filament\Forms\Components\Grid;
+use Filament\Forms\Components\MarkdownEditor;
 use Filament\Forms\Components\TextInput;
 
 class TextBlock extends Block
@@ -18,12 +21,42 @@ class TextBlock extends Block
 
     public function fields(array $settings = []): array
     {
-        return [
-            TextInput::make('title')
-                ->required(),
+        $columns = [];
+        for ($i = 1; $i <= 3; $i++) {
+            $columns[] = MarkdownEditor::make("content_{$i}")
+                ->hidden(fn () => $i > ($settings['columns'] ?? 1))
+                ->required();
+        }
 
-            TextInput::make('subtitle')
-                ->required(),
+        return [
+            Grid::make(($settings['has_subtitle'] ?? true) ? 2 : 1)->schema([
+                TextInput::make('title')
+                    ->required(),
+
+                TextInput::make('subtitle')
+                    ->hidden(fn () => ! ($settings['has_subtitle'] ?? true))
+                    ->required(),
+            ]),
+
+            ...$columns,
+        ];
+    }
+
+    public function settings(): array
+    {
+        return [
+            Grid::make(2)->schema([
+                TextInput::make('columns')
+                    ->label('Number of columns')
+                    ->type('number')
+                    ->rules(['min:1'])
+                    ->default(2)
+                    ->required(),
+            ]),
+
+            Checkbox::make('has_subtitle')
+                ->label('Has a subtitle')
+                ->default(true),
         ];
     }
 }
