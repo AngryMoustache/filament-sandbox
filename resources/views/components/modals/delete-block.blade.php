@@ -2,7 +2,7 @@
     'statePath',
 ])
 
-<x-filament::modal id="delete-block">
+<x-filament::modal id="delete-block-{{ $statePath }}">
     <x-filament::modal.heading>
         Are you sure?
     </x-filament::modal.heading>

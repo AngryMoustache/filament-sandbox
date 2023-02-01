@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources;
 
+use App\Blocks\ButtonBlock;
 use App\Filament\Resources\PageResource\Pages;
 use App\Forms\Components\PageArchitectInput;
 use App\Models\Page;
@@ -44,7 +45,12 @@ class PageResource extends Resource
                     //         TextInput::make('slug')
                     //     ]),
 
-                    PageArchitectInput::make('body'),
+                    PageArchitectInput::make('body')
+                        ->blocks([
+                            ButtonBlock::class,
+                        ]),
+
+                    // PageArchitectInput::make('body_2'),
 
                     // TableRepeater::make('test')->schema([
                     //     TextInput::make('title'),

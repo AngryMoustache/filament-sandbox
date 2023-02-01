@@ -3,7 +3,7 @@
     'statePath',
 ])
 
-<x-filament::modal id="new-block" width="7xl">
+<x-filament::modal id="new-block-{{ $statePath }}" width="7xl">
     <x-filament::modal.heading>
         Adding a new block
     </x-filament::modal.heading>

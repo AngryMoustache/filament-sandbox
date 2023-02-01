@@ -3,7 +3,7 @@
     'fields',
 ])
 
-<x-filament::modal id="block-settings" width="4xl">
+<x-filament::modal id="block-settings-{{ $statePath }}" width="4xl">
     <x-filament::modal.heading>
         Block settings
     </x-filament::modal.heading>

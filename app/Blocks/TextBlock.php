@@ -4,7 +4,7 @@ namespace App\Blocks;
 
 use Filament\Forms\Components\Checkbox;
 use Filament\Forms\Components\Grid;
-use Filament\Forms\Components\MarkdownEditor;
+use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 
 class TextBlock extends Block
@@ -23,7 +23,8 @@ class TextBlock extends Block
     {
         $columns = [];
         for ($i = 1; $i <= 3; $i++) {
-            $columns[] = MarkdownEditor::make("content_{$i}")
+            // TODO: markdown valdiation
+            $columns[] = Textarea::make("content_{$i}")
                 ->hidden(fn () => $i > ($settings['columns'] ?? 1))
                 ->required();
         }
@@ -50,13 +51,13 @@ class TextBlock extends Block
                     ->label('Number of columns')
                     ->type('number')
                     ->rules(['min:1'])
-                    ->default(2)
+                    ->default(1)
                     ->required(),
             ]),
 
             Checkbox::make('has_subtitle')
                 ->label('Has a subtitle')
-                ->default(true),
+                ->default(false),
         ];
     }
 }

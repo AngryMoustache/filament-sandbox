@@ -18,7 +18,7 @@
             this.modalData = data
 
             window.dispatchEvent(new CustomEvent('open-modal', {
-                detail: { id: modalId }
+                detail: { id: modalId + '-{{ $getStatePath() }}' }
             }))
         },
     }">
